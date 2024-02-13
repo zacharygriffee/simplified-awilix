@@ -1,5 +1,5 @@
 import {test, solo} from "brittle";
-import {asClass, asFunction} from "awilix";
+import {asClass, asFunction, AwilixResolutionError} from "awilix";
 import createContainer, {install} from "./index.js";
 
 await install();
@@ -82,7 +82,7 @@ test("Handle unregistered stuff", async t => {
     const container = createContainer(
         (prop, {defaultEntry, howMuch}) => {
             if (prop === "cream") {
-                throw new Error("cream");
+                throw new AwilixResolutionError(prop, []);
             }
             return "Maybe I drank " + howMuch / defaultEntry + " cups of coffee";
         }
