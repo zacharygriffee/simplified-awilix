@@ -62,7 +62,23 @@ test("you could use awilix resolver functions anyway if you need class or inject
     t.is(justHowMuch, "I drank 20 cups of coffee", "Basics")
 });
 
-solo("Handle unregistered stuff", async t => {
+test("Errors that are not AwilixResolutionError still throw cradle", async t => {
+    const container = createContainer();
+    container.register({
+        howMuch: 6,
+        drinkCoffee({howMuch}) {
+            return "I drank " + howMuch + " cups of coffee"
+        },
+        cream() {
+            throw new Error("Not today.");
+        }
+    });
+
+    t.exception(() => container.cradle.cream);
+    t.absent(container.cradle.unregisteredValue);
+});
+
+test("Handle unregistered stuff", async t => {
     const container = createContainer(
         (prop, {defaultEntry, howMuch}) => {
             if (prop === "cream") {
