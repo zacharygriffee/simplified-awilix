@@ -126,6 +126,7 @@ async function importModule(urlOrModuleSpecifier, cdnFormatter = (specifier, con
 
 function awilixHelpers(config = {}) {
     let {
+        AwilixResolutionError,
         config: _config, createContainer, asFunction, asValue, aliasTo, container, handleUnregistered = () => undefined
     } = {...awilix, ...config};
     if (!container) container = createContainer?.(_config)
@@ -192,7 +193,8 @@ function awilixHelpers(config = {}) {
                 try {
                     return _cradle[prop];
                 } catch (e) {
-                    return handleUnregistered(prop, container.cradle);
+                    if (e instanceof AwilixResolutionError) return handleUnregistered(prop, container.cradle);
+                    throw e;
                 }
             }
         })
