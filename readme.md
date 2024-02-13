@@ -1,8 +1,6 @@
 # SimplifiedAwilix
 
-## API Documentation
-
-
+## [API Documentation](https://github.com/zacharygriffee/simplified-awilix/blob/master/docs/api.md)
 
 ### Why?
 
