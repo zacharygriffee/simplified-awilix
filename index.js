@@ -145,7 +145,11 @@ function awilixHelpers(config = {}) {
     function register(book, type = "transient") {
         for (const [key, entry] of Object.entries(book)) {
             if (isResolverObject(entry)) {
-                _register(key, entry[type]());
+                if (entry.resolve && !entry[type]) {
+                    _register(key, entry);
+                } else {
+                    _register(key, entry[type]());
+                }
             } else if (isFunction(entry)) {
                 _register(key, asFunction(entry)[type]());
             } else {

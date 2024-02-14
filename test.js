@@ -1,5 +1,5 @@
 import {test, solo} from "brittle";
-import {asClass, asFunction, AwilixResolutionError} from "awilix";
+import {asClass, asFunction, asValue, AwilixResolutionError} from "awilix";
 import createContainer, {install} from "./index.js";
 
 await install();
@@ -12,6 +12,19 @@ test("Basic test", t => {
             return "I drank " + howMuch + " cups of coffee"
         }
     }, "transient").cradle;
+
+    t.is(drinkCoffee, "I drank 5 cups of coffee", "No asFunction or asValue necessary");
+    t.absent(unregisteredValue, "Unregistered values don't throw.");
+});
+
+test("Test that awilix resolvers still work", async t => {
+    const container = createContainer();
+    const {drinkCoffee, howMuch, unregisteredValue} = container.register({
+        howMuch: asValue(5),
+        drinkCoffee: asFunction(({howMuch}) => {
+            return "I drank " + howMuch + " cups of coffee"
+        })
+    }).cradle;
 
     t.is(drinkCoffee, "I drank 5 cups of coffee", "No asFunction or asValue necessary");
     t.absent(unregisteredValue, "Unregistered values don't throw.");
