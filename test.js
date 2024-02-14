@@ -19,15 +19,17 @@ test("Basic test", t => {
 
 test("Test that awilix resolvers still work", async t => {
     const container = createContainer();
-    const {drinkCoffee, howMuch, unregisteredValue} = container.register({
+    const {drinkCoffee, howMuch, unregisteredValue, handlesNullStuff} = container.register({
         howMuch: asValue(5),
         drinkCoffee: asFunction(({howMuch}) => {
             return "I drank " + howMuch + " cups of coffee"
-        })
+        }),
+        handlesNullStuff: null
     }).cradle;
 
     t.is(drinkCoffee, "I drank 5 cups of coffee", "No asFunction or asValue necessary");
     t.absent(unregisteredValue, "Unregistered values don't throw.");
+    t.absent(handlesNullStuff)
 });
 
 test("createScope using registerScoped", t => {
