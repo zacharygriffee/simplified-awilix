@@ -1,4 +1,4 @@
-import {isResolverObject} from "./lib/isResolverObject.js";
+import {isResolverFunction, isResolverObject} from "./lib/isResolverObject.js";
 import {isFunction} from "./lib/isFunction.js";
 import {extend} from "./lib/extend.js";
 import {isContainer} from "./lib/isContainer.js";
@@ -137,24 +137,49 @@ function awilixHelpers(config = {}) {
      * Mostly similar to vanilla container.register, except that it also accepts standard functions and values.
      * But classes still need to be wrapped in asClass. And if you want to use inject feature of Awilix, you'll have
      * to use the asFunction resolver.
-     * @param {object} book A book of functions or values or resolvers
-     * @param {string} [type="transient"] The lifetime of these resolvers. transient | singleton | scoped
+     *
+     * See Awilix documentation for varying signatures.
+     *
+     * @param {object} bookOrResolverName A book of functions or values or resolvers
+     * @param {string} [typeOrResolver="transient"] The lifetime of these resolvers.
+     * @param {string} [maybeType]
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
-    function register(book, type = "transient") {
-        for (const [key, entry] of Object.entries(book)) {
-            if (isResolverObject(entry)) {
-                if (entry.resolve && !entry[type]) {
-                    _register(key, entry);
+    function register(bookOrResolverName, typeOrResolver = "transient", maybeType) {
+        if (typeof bookOrResolverName === "string") {
+            bookOrResolverName = {
+                [bookOrResolverName]: typeOrResolver
+            };
+            typeOrResolver = maybeType || "transient";
+        }
+        for (const [key, entry] of Object.entries(bookOrResolverName)) {
+            let resolver = entry;
+            if (typeof entry === "object" && !isResolverObject(entry) && (isFunction(entry?.resolver)) || isResolverFunction(entry?.resolver)) {
+                const {
+                    resolver: _resolver,
+                    disposer,
+                    inject,
+                    injector = inject,
+                    type,
+                    lifetime: _lifetime = type || typeOrResolver
+                } = entry;
+                resolver = asFunction(_resolver);
+                if (isFunction(disposer)) resolver = resolver.disposer(disposer);
+                if (isFunction(injector)) resolver = resolver.inject(disposer);
+                _register(key, resolver[_lifetime]());
+
+            } else if (isResolverObject(resolver)) {
+                if (resolver.resolve && !resolver[typeOrResolver]) {
+                    _register(key, resolver);
                 } else {
-                    _register(key, entry[type]());
+                    _register(key, resolver[typeOrResolver]());
                 }
-            } else if (isFunction(entry)) {
-                _register(key, asFunction(entry)[type]());
+            } else if (isFunction(resolver)) {
+                _register(key, asFunction(resolver)[typeOrResolver]());
             } else {
                 // Must be a value, or anything else.
-                _register(key, asValue(entry));
+                _register(key, asValue(resolver));
             }
         }
 
@@ -163,32 +188,32 @@ function awilixHelpers(config = {}) {
 
     /**
      * Register singleton functions or values or resolvers
-     * @param {object} book A book of functions or values or resolvers
+     * @see SimplifiedAwilix.register for argument signature.
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
-    function registerSingleton(book) {
-        return register(book, "singleton");
+    function registerSingleton(...args) {
+        return register(...args);
     }
 
     /**
      * Register transient functions or values or resolvers
-     * @param {object} book A book of functions or values or resolvers
+     * @see SimplifiedAwilix.register for argument signature.
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
-    function registerTransient(book) {
-        return register(book, "transient");
+    function registerTransient(...args) {
+        return register(...args);
     }
 
     /**
      * Register scoped functions or values or resolvers
-     * @param {object} book A book of functions or values or resolvers
+     * @see SimplifiedAwilix.register for argument signature.
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
-    function registerScoped(book) {
-        return register(book, "scoped");
+    function registerScoped(...args) {
+        return register(...args);
     }
 
     function cradle() {

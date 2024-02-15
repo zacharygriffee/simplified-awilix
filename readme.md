@@ -9,7 +9,7 @@
 - It is easy to infer function from value when not using classes.
 - If I really need to expose a class. I'll use the resolver functions that awilix exposes.
 - I also don't use the injection technique very often.
-- I also do not have to adapt my libraries to use what I need awilix for. 
+- I also do not have to adapt my libraries to use what I need awilix for.
 - I write my code to be as environmentally agnostic as possible. Hence, my need for handling dependencies myself.
 
 So, with all that boiled off, all I needed was `Awilix.createContainer`.
@@ -17,13 +17,14 @@ So, with all that boiled off, all I needed was `Awilix.createContainer`.
 ### Changes
 
 - No need for asFunction, asValue, unless using injections. But you could still use them (see example)
-- Container.cradle doesn't throw on unregistered dependencies and by default returns undefined, but you can change 
-  this behavior.
+- Container.cradle doesn't throw on unregistered dependencies and by default returns undefined, but you can change this
+  behavior.
 - Install dependencies yourself, in this case, Awilix.
 - Then createContainer() !!!
 - createScope works as expected
 
 ### Installation
+
 ```ecmascript 6
 import {createContainer, install, configuration} from "simplified-awilix";
 // If node, will import from your project dependencies
@@ -35,11 +36,16 @@ await install();
 import * as AwilixModule from "awilix";
 import {createContainer, install, configuration} from "simplified-awilix";
 
-configuration.dependencies.awilix = { get() { return AwilixModule } }
+configuration.dependencies.awilix = {
+    get() {
+        return AwilixModule
+    }
+}
 await install();
 ```
 
 ### Use
+
 ```ecmascript 6
 class CoffeeDrinker {
     constructor({howMuch}) {
@@ -63,21 +69,36 @@ const container = createContainer()
         injectable: asFunction(({howMuch}) => {
             return "I drank " + howMuch + " cups of coffee"
         }).inject(() => ({howMuch: 100})),
+        expanded: {
+            // Use an object with this interface signature
+            // For a function that needs fine-tuned configuration
+            resolver({howMuch}) {
+            },
+            // Override the lifetime
+            lifetime: "scoped",
+            // Add disposer
+            disposer(expanded) {
+            },
+            // Inject stuff
+            injector() {
+            }
+        },
         // Set lifetime of the entire set of functions
     }, "transient")
     .register({
         // Maybe have some scoped dependencies
     }, "scoped")
+    // Altnerative signature supported
+    .register("alternative", () => "signature", "scoped")
     // Or use the added convenience functions
-    .registerScoped({ })
-    .registerTransient({ })
-    .registerSingleton({ })
+    .registerScoped({})
+    // The convenience functions also support alternative signature.    
+    .registerTransient("transientOne", () => "hi I'm transient")
+    .registerSingleton({})
 
 container.cradle.drinkCoffee; // 5;
 container.cradle.missingFunction // undefined;
 ```
-
-
 
 ## Test it
 

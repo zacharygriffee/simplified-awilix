@@ -103,11 +103,18 @@ test("Handle unregistered stuff", async t => {
         }
     );
     const {drinkCoffee, unregisteredValue, wouldYouLikeCream} = container
+        // You can use the alternative argument signature
+        .registerTransient("defaultEntry", 2)
         .registerTransient({
-            defaultEntry: 2,
             howMuch: 1000,
-            drinkCoffee({howMuch}) {
-                return "I drank " + howMuch + " cups of coffee"
+            drinkCoffee: {
+                resolver({howMuch}) {
+                    return "I drank " + howMuch + " cups of coffee"
+                },
+                disposer(test) {
+                    t.pass("Disposer ran.");
+                },
+                type: "scoped"
             }
         })
         .registerScoped({
@@ -143,4 +150,6 @@ test("Handle unregistered stuff", async t => {
         "Or maybe I just drank espresso",
         "Unregistered function handled scope of a scope with change of unregistered handler"
     );
+
+   await container.dispose();
 });
