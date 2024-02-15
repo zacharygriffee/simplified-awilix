@@ -193,7 +193,7 @@ function awilixHelpers(config = {}) {
      * @returns {container}
      */
     function registerSingleton(...args) {
-        return register(...args);
+        return register(...args, "singleton");
     }
 
     /**
@@ -203,7 +203,8 @@ function awilixHelpers(config = {}) {
      * @returns {container}
      */
     function registerTransient(...args) {
-        return register(...args);
+        debugger;
+        return register(...args, "transient");
     }
 
     /**
@@ -213,7 +214,8 @@ function awilixHelpers(config = {}) {
      * @returns {container}
      */
     function registerScoped(...args) {
-        return register(...args);
+
+        return register(...args, "scoped");
     }
 
     function cradle() {
