@@ -240,6 +240,7 @@ function awilixHelpers(config = {}) {
      */
     function createScope(_handleUnregistered = handleUnregistered) {
         return awilixHelpers({
+            AwilixResolutionError,
             createContainer,
             asFunction,
             asValue,
