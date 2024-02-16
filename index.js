@@ -203,7 +203,6 @@ function awilixHelpers(config = {}) {
      * @returns {container}
      */
     function registerTransient(...args) {
-        debugger;
         return register(...args, "transient");
     }
 
@@ -214,7 +213,6 @@ function awilixHelpers(config = {}) {
      * @returns {container}
      */
     function registerScoped(...args) {
-
         return register(...args, "scoped");
     }
 
