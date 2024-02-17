@@ -217,10 +217,10 @@ function awilixHelpers(config = {}) {
     }
 
     function cradle() {
-        return new Proxy({}, {
+        return new Proxy(_cradle, {
             get(target, prop) {
                 try {
-                    return _cradle[prop];
+                    return target[prop];
                 } catch (e) {
                     if (e instanceof AwilixResolutionError) return handleUnregistered(prop, container.cradle);
                     throw e;

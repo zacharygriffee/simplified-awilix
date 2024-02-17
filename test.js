@@ -153,3 +153,21 @@ test("Handle unregistered stuff", async t => {
 
    await container.dispose();
 });
+
+test("iterate cradle", async t => {
+    const container = createContainer();
+    container.register({
+        drinkCoffee: ({howMuch}) => "I drank " + howMuch + " cups of coffee",
+        howMuch: 1,
+        cream: false
+    });
+
+    t.alike(
+        Object.entries(container.cradle),
+        [
+            ["drinkCoffee", "I drank 1 cups of coffee"],
+            ["howMuch", 1],
+            ["cream", false]
+        ]
+    );
+});
