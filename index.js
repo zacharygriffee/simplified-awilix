@@ -222,7 +222,10 @@ function awilixHelpers(config = {}) {
                 try {
                     return target[prop];
                 } catch (e) {
-                    if (e instanceof AwilixResolutionError) return handleUnregistered(prop, container.cradle);
+                    if (e instanceof AwilixResolutionError || e.message.startsWith("Could not resolve")) {
+                        return handleUnregistered(prop, container.cradle);
+                    }
+
                     throw e;
                 }
             }
