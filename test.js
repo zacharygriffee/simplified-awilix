@@ -92,7 +92,7 @@ test("registerIf", t => {
     t.absent(container.cradle.thisWontRegister);
 });
 
-solo("registerIfNot", t => {
+test("registerIfNot", t => {
     const container = createContainer();
     const coffeeDrinkerBase = container.registerScoped({
         howMuch: 20,
