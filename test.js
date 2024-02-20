@@ -48,6 +48,88 @@ test("createScope using registerScoped", t => {
     t.absent(unregisteredValue, "Unregistered values don't throw.");
 });
 
+test("registerIf", t => {
+    const container = createContainer();
+    const coffeeDrinkerBase = container.registerScoped({
+        howMuch: 20,
+        drinkCoffee({howMuch}) {
+            return "I drank " + howMuch + " cups of coffee";
+        }
+    });
+    container.registerScopedIf("drinkCoffee", {
+        cream() {
+            return false;
+        }
+    }).registerSingletonIf("drinkCoffee", {
+        hazelnutSyrup() {
+            return true
+        }
+    }).registerIf("hazelnutSyrup", {
+        sugar({hazelnutSyrup}) {
+            return !hazelnutSyrup
+        }
+    });
+
+    const {cream, hazelnutSyrup, sugar} = {...coffeeDrinkerBase.cradle}
+    t.is(cream, false); t.is(hazelnutSyrup, true); t.is(sugar, false);
+
+    container.registerIf(["cream", "sugar", "hazelnutSyrup"], {
+        drinkCoffee({howMuch, cream, sugar, hazelnutSyrup}) {
+            return ["I drank", howMuch, "cups of coffee with", cream ? "creamy" : "", sugar ? "sweet" : "", hazelnutSyrup ? "nutty" : "", "flavors"].join(" ");
+        }
+    });
+
+    t.is(container.cradle.drinkCoffee, "I drank 20 cups of coffee with   nutty flavors");
+
+    container.registerIf("whippedCream", {
+        drinkCoffee() {
+            return "this won't run";
+        },
+        thisWontRegister() {}
+    });
+
+    t.is(container.cradle.drinkCoffee, "I drank 20 cups of coffee with   nutty flavors");
+    t.absent(container.cradle.thisWontRegister);
+});
+
+test("registerIfNot", t => {
+    const container = createContainer();
+    const coffeeDrinkerBase = container.registerScoped({
+        howMuch: 20,
+        drinkCoffee({howMuch}) {
+            return "I drank " + howMuch + " cups of coffee";
+        }
+    });
+    container.registerScopedIfNot("drinkCoffee", {
+        cream() {
+            return false;
+        }
+    }).registerSingletonIfNot("drinkCoffee", {
+        hazelnutSyrup() {
+            return true
+        }
+    }).registerIfNot("hazelnutSyrup", {
+        sugar({hazelnutSyrup}) {
+            return !hazelnutSyrup
+        }
+    });
+
+    const {cream, hazelnutSyrup, sugar} = {...coffeeDrinkerBase.cradle}
+    t.absent(cream); t.absent(hazelnutSyrup);
+
+    // Sugar exists because hazelnutSyrup doesn't.
+    t.is(sugar, true);
+
+    // both cream and hazelnutSyrup doesn't exist, so this triggers.
+    container.registerIfNot(["cream", "sugar", "hazelnutSyrup"], {
+        drinkCoffee({howMuch, cream, sugar, hazelnutSyrup}) {
+            return ["I drank", howMuch, "cups of coffee with", cream ? "creamy" : "", sugar ? "sweet" : "", hazelnutSyrup ? "nutty" : "", "flavors"].join(" ");
+        }
+    });
+
+    t.is(container.cradle.drinkCoffee, "I drank 20 cups of coffee with  sweet  flavors");
+});
+
 test("you could use awilix resolver functions anyway if you need class or injections", t => {
     class CoffeeDrinker {
         constructor({howMuch}) {
