@@ -143,6 +143,7 @@ function awilixHelpers(config = {}) {
      * @param {object} bookOrResolverName A book of functions or values or resolvers
      * @param {string} [typeOrResolver="transient"] The lifetime of these resolvers.
      * @param {string} [maybeType]
+     * @instance
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
@@ -189,6 +190,7 @@ function awilixHelpers(config = {}) {
     /**
      * Register singleton functions or values or resolvers
      * @see SimplifiedAwilix.register for argument signature.
+     * @instance
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
@@ -199,6 +201,7 @@ function awilixHelpers(config = {}) {
     /**
      * Register transient functions or values or resolvers
      * @see SimplifiedAwilix.register for argument signature.
+     * @instance
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
@@ -209,12 +212,120 @@ function awilixHelpers(config = {}) {
     /**
      * Register scoped functions or values or resolvers
      * @see SimplifiedAwilix.register for argument signature.
+     * @instance
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
     function registerScoped(...args) {
         return register(...args, "scoped");
     }
+
+    /**
+     * @name registerSingletonIf
+     * @description Register only if these dependencies exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerScopedIf
+     * @description Register only if these dependencies exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerTransientIf
+     * @alias registerTransientIf
+     * @description Register only if these dependencies exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerIf
+     * @alias registerTransientIf
+     * @description Register only if these dependencies exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    const [registerSingletonIf, registerScopedIf, registerTransientIf, registerIf] =
+    ["Singleton", "Scoped", "Transient", ""].map(
+        type => (dependencyNames, ...args) => {
+            if (typeof dependencyNames === "string") dependencyNames = [dependencyNames];
+            const keys = Object.keys(container.cradle);
+            if (dependencyNames.every(o => keys.includes(o))) {
+                container["register" + type](...args);
+            }
+            return container;
+        }
+    );
+
+    /**
+     * @name registerSingletonIfNot
+     * @description Register only if these dependencies don't exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerScopedIfNot
+     * @description Register only if these dependencies don't exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerTransientIfNot
+     * @alias registerTransientIfNot
+     * @description Register only if these dependencies don't exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+
+    /**
+     * @name registerIfNot
+     * @alias registerTransientIfNot
+     * @description Register only if these dependencies don't exist in the container.
+     * @see SimplifiedAwilix.register for argument signature.
+     * @instance
+     * @param {string|array<string>} dependencyNames Dependency names to check if exists.
+     * @param args The argument signature of the Container.register function
+     * @memberOf SimplifiedAwilix.container
+     */
+    const [registerSingletonIfNot, registerScopedIfNot, registerTransientIfNot, registerIfNot] =
+        ["Singleton", "Scoped", "Transient", ""].map(
+            type => (dependencyNames, ...args) => {
+                if (typeof dependencyNames === "string") dependencyNames = [dependencyNames];
+                const keys = Object.keys(container.cradle);
+                if (!dependencyNames.every(o => keys.includes(o))) {
+                    container["register" + type](...args);
+                }
+                return container;
+            }
+        );
 
     function cradle() {
         return new Proxy(_cradle, {
@@ -236,6 +347,7 @@ function awilixHelpers(config = {}) {
      * Create scope for container.
      * @param [_handleUnregistered] A function called with (property, container.cradle) of dependencies that don't exist
      * in the container.
+     * @instance
      * @memberOf SimplifiedAwilix.container
      * @returns {container}
      */
@@ -258,6 +370,8 @@ function awilixHelpers(config = {}) {
     });
 
     return extend(container, {
-        register, registerTransient, registerScoped, registerSingleton, createScope
+        register, registerTransient, registerScoped, registerSingleton, createScope,
+        registerSingletonIf, registerScopedIf, registerTransientIf, registerIf,
+        registerSingletonIfNot, registerScopedIfNot, registerTransientIfNot, registerIfNot
     });
 }
